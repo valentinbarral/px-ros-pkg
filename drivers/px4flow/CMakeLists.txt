@@ -15,7 +15,7 @@ catkin_package(
 ###########
 
 include_directories(include
-  ../../mavlink/include/mavlink/v1.0
+  ../../c_library_v1/
   ${catkin_INCLUDE_DIRS}
 )
 

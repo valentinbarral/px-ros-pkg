@@ -2,7 +2,7 @@
 #include <boost/thread.hpp>
 
 // MAVLINK includes
-#include <pixhawk/mavlink.h>
+#include <common/mavlink.h>
 
 // ROS includes
 #include <image_transport/image_transport.h>
@@ -55,6 +55,7 @@ private:
     ros::Publisher m_mavlinkPub;
     ros::Publisher m_optFlowPub;
     ros::Publisher m_viconPub;
+    ros::Publisher m_optFlowRadPub;
 
     mavlink_highres_imu_t m_imuRaw;
 

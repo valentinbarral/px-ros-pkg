@@ -4,6 +4,7 @@
 // ROS includes
 #include <px_comm/Mavlink.h>
 #include <px_comm/OpticalFlow.h>
+#include <px_comm/OpticalFlowRad.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
@@ -84,6 +85,7 @@ SerialComm::open(const std::string& portStr, int baudrate)
     // set up publishers
     m_mavlinkPub = m_nh.advertise<px_comm::Mavlink>("mavlink", 100);
     m_optFlowPub = m_nh.advertise<px_comm::OpticalFlow>("opt_flow", 5);
+    m_optFlowRadPub = m_nh.advertise<px_comm::OpticalFlowRad>("opt_flow_rad", 5);
 
     image_transport::ImageTransport it(m_nh);
     m_imagePub = it.advertise("camera_image", 5);
@@ -169,6 +171,7 @@ SerialComm::readCallback(const boost::system::error_code& error, size_t bytesTra
             publishMAVLINKMessage(message);
 
             m_systemId = message.sysid;
+           
 
             switch (message.msgid)
             {
@@ -380,6 +383,36 @@ SerialComm::readCallback(const boost::system::error_code& error, size_t bytesTra
                 optFlowMsg.quality = flow.quality;
 
                 m_optFlowPub.publish(optFlowMsg);
+
+                break;
+            }
+            case MAVLINK_MSG_ID_OPTICAL_FLOW_RAD:
+            {
+                if (m_optFlowRadPub.getNumSubscribers() == 0)
+                {
+                    break;
+                }
+
+                // decode message
+                mavlink_optical_flow_rad_t flowRad;
+                mavlink_msg_optical_flow_rad_decode(&message, &flowRad);
+
+                px_comm::OpticalFlowRad optFlowRadMsg;
+
+                optFlowRadMsg.header.stamp = ros::Time::now();
+                optFlowRadMsg.header.frame_id = m_frameId;
+                optFlowRadMsg.distance = flowRad.distance;
+                optFlowRadMsg.integrated_x = flowRad.integrated_x;
+                optFlowRadMsg.integrated_y = flowRad.integrated_y;
+                optFlowRadMsg.integrated_xgyro = flowRad.integrated_xgyro;
+                optFlowRadMsg.integrated_ygyro = flowRad.integrated_ygyro;
+                optFlowRadMsg.integrated_zgyro = flowRad.integrated_zgyro;
+                optFlowRadMsg.temperature = flowRad.temperature;
+                optFlowRadMsg.quality = flowRad.quality;
+                optFlowRadMsg.integration_time_us = flowRad.integration_time_us;
+                optFlowRadMsg.time_delta_distance_us = flowRad.time_delta_distance_us;
+
+                m_optFlowRadPub.publish(optFlowRadMsg);
 
                 break;
             }

@@ -5,7 +5,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs std_msgs message_generatio
 
 add_message_files(
   DIRECTORY msg
-  FILES CameraInfo.msg Mavlink.msg OpticalFlow.msg
+  FILES CameraInfo.msg Mavlink.msg OpticalFlow.msg OpticalFlowRad.msg
 )
 
 add_service_files(

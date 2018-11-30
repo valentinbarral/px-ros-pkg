@@ -2,6 +2,7 @@
 
 // ROS includes
 #include <px_comm/OpticalFlow.h>
+#include <px_comm/OpticalFlowRad.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
 
@@ -79,6 +80,7 @@ SerialComm::open(const std::string& portStr, int baudrate)
 
     // set up publishers
     m_optFlowPub = nh.advertise<px_comm::OpticalFlow>("opt_flow", 5);
+    m_optFlowRadPub = nh.advertise<px_comm::OpticalFlowRad>("opt_flow_rad", 5);
 
     image_transport::ImageTransport it(nh);
     m_imagePub = it.advertise("camera_image", 5);
@@ -150,14 +152,20 @@ SerialComm::readCallback(const boost::system::error_code& error, size_t bytesTra
     for (size_t i = 0; i < bytesTransferred; i++) {
         bool msgReceived = mavlink_parse_char(MAVLINK_COMM_1, m_buffer[i], &message, &status);
 
+
+        //if (status.parse_error>0){
+        //    ROS_INFO("Parse Error. State: %d", status.parse_state);
+        //}
+
         if (msgReceived)
         {
             m_systemId = message.sysid;
-
+            //ROS_INFO("MsgID: x=%d bytes=%d",message.msgid, (int)bytesTransferred);
             switch (message.msgid)
             {
             case MAVLINK_MSG_ID_OPTICAL_FLOW:
             {
+               // ROS_INFO("MAVLINK_MSG_ID_OPTICAL_FLOW");
                 // decode message
                 mavlink_optical_flow_t flow;
                 mavlink_msg_optical_flow_decode(&message, &flow);
@@ -174,6 +182,32 @@ SerialComm::readCallback(const boost::system::error_code& error, size_t bytesTra
                 optFlowMsg.quality = flow.quality;
 
                 m_optFlowPub.publish(optFlowMsg);
+
+                break;
+            }
+            case MAVLINK_MSG_ID_OPTICAL_FLOW_RAD:
+            {
+                //ROS_INFO("MAVLINK_MSG_ID_OPTICAL_FLOW_RAD");
+                // decode message
+                mavlink_optical_flow_rad_t flowRad;
+                mavlink_msg_optical_flow_rad_decode(&message, &flowRad);
+
+                px_comm::OpticalFlowRad optFlowRadMsg;
+
+                optFlowRadMsg.header.stamp = ros::Time::now();
+                optFlowRadMsg.header.frame_id = m_frameId;
+                optFlowRadMsg.distance = flowRad.distance;
+                optFlowRadMsg.integrated_x = flowRad.integrated_x;
+                optFlowRadMsg.integrated_y = flowRad.integrated_y;
+                optFlowRadMsg.integrated_xgyro = flowRad.integrated_xgyro;
+                optFlowRadMsg.integrated_ygyro = flowRad.integrated_ygyro;
+                optFlowRadMsg.integrated_zgyro = flowRad.integrated_zgyro;
+                optFlowRadMsg.temperature = flowRad.temperature;
+                optFlowRadMsg.quality = flowRad.quality;
+                optFlowRadMsg.integration_time_us = flowRad.integration_time_us;
+                optFlowRadMsg.time_delta_distance_us = flowRad.time_delta_distance_us;
+
+                m_optFlowRadPub.publish(optFlowRadMsg);
 
                 break;
             }

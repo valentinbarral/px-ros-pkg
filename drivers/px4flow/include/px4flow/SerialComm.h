@@ -2,7 +2,7 @@
 #include <boost/thread.hpp>
 
 // MAVLINK includes
-#include <pixhawk/mavlink.h>
+#include <common/mavlink.h>
 
 // ROS includes
 #include <image_transport/image_transport.h>
@@ -46,6 +46,7 @@ private:
     ros::Publisher m_optFlowPub;
     image_transport::Publisher m_imagePub;
     std::string m_frameId;
+    ros::Publisher m_optFlowRadPub;
 
     ros::Timer m_syncTimer;
 
