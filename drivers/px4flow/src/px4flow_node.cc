@@ -36,7 +36,7 @@ main(int argc, char** argv)
     ros::NodeHandle pnh("~");
 
     std::string portStr;
-    pnh.param("serial_port", portStr, std::string("/dev/ttyUSB0"));
+    pnh.param("port", portStr, std::string("/dev/ttyUSB0"));
 
     int baudrate;
     pnh.param("baudrate", baudrate, 115200);
