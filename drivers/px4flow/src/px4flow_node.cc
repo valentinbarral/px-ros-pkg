@@ -44,6 +44,8 @@ main(int argc, char** argv)
     std::string frameId;
     pnh.param("frame_id", frameId, std::string("/px4flow"));
 
+    ROS_INFO("PX4FLOW port: %s", portStr.c_str());
+
     px::SerialComm comm(frameId);
     if (!comm.open(portStr, baudrate))
     {
